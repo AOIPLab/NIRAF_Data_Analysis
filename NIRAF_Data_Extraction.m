@@ -142,13 +142,21 @@ for i = (1:length(data_dir))
     % already grayscale: [AS Edit on 2/22/25]
     image = im2gray(imread(fullfile(data_dir_path,fname_list{i})));
 
+    % show the image with adjusted contrast
+    num_dev = 3;
+    data_mean = mean(image(:));
+    data_std = std2(image(:));
+    data_max = max(image(:));
+    data_min = min(image(:));
+    cmax = min(data_max, data_mean + num_dev * data_std);
+    cmin = max(data_min, data_mean - num_dev * data_std);
+    imshow(image, [cmin, cmax])
 
-    % show the image
-    imshow(image);
+
     % title(fname_list{i}, 'Interpreter', 'none'); % commented out to mask image identity from user
     % set(gcf, 'units','normalized','outerposition',[0 0 1 1]); % make the image full screen
 
-    imcontrast;
+    % imcontrast;
     % draw seed point
     seed = drawpoint;
     % extract coordinates from the seed
