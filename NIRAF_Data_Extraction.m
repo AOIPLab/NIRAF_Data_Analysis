@@ -252,7 +252,7 @@ end
 
 name_list = name_list';
 results = [name_list, fovea_coords];
-writecell(results, fullfile(LUTpath, strcat('NIRAF_Data_Extration_Fovea_Coords_', string(datetime('now','TimeZone','local','Format','yyyyMMdd')) ,'.csv')));
+writecell(results, fullfile(LUTpath, strcat('NIRAF_Data_Extraction_Fovea_Coords_', string(datetime('now','TimeZone','local','Format','yyyyMMdd')) ,'.csv')));
 close all
 
 
