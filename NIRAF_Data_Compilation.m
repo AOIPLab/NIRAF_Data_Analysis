@@ -140,7 +140,23 @@ end
 writecell(common_res, fullfile(data_dir_path, strcat('NIRAF_Data_Compilation_COMMON_Data_', string(datetime('now','TimeZone','local','Format','yyyyMMdd')) ,'.csv')));
 
 
+count = 1;
+for x = 1:length(data_dir)
+    spl = split(data_dir(x).name, '_');
+    sub_id = strcat(spl{1},'_',spl{2});
+    for y = 1:length(data{x}.BinCenter)
+        if data{x}.BinCenter(y) >= -4.0 && data{x}.BinCenter(y) <= 4.0
+            common_res{count,1} = data{x}.BinCenter(y);
+            common_res{count,2} = data_dir(x).name;
+            common_res{count,3} = sub_id;
+            common_res{count,4} = data{x}.Average(y);
+            count = count+1;
+        end
+    end
+end
     
+% Write the common data results to a csv
+writecell(common_res, fullfile(data_dir_path, strcat('NIRAF_Data_Compilation_[-4.0,4.0]_Data_', string(datetime('now','TimeZone','local','Format','yyyyMMdd')) ,'.csv')));
 
     
 
