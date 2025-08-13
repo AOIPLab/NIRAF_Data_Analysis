@@ -90,16 +90,23 @@ results_all = zeros(length(all_bin_locs), length(data_dir));
 results_locs_all(:,1) = all_bin_locs;
 results_sum = zeros(length(all_bin_locs),1);
 results_tot = zeros(length(all_bin_locs),1);
+% results_list = zeros(length(all_bin_locs),1);
+results_stdev = zeros(length(all_bin_locs),1);
 
 
 % Find which subjects have data at each possible location
 for z = 1:length(results_locs_all)
+    count = 1;
+    clear results_list;
     for j = 1:length(data_dir)
         for k = 1:length(data{j}.BinCenter)
             if data{j}.BinCenter(k) == results_locs_all(z,1)
                 results_all(z,j) = 1;
+                results_list(count) = data{j}.Average(k);
                 results_sum(z) = results_sum(z) + data{j}.Average(k);
+                results_stdev(z) = std(results_list);
                 results_tot(z) = results_tot(z) + 1;
+                count = count+1;
                 break
             else
                 results_all(z,j) = 0;
@@ -108,12 +115,15 @@ for z = 1:length(results_locs_all)
     end
 end
 
+
+
 % Add additional titles to the headers
 Header{length(data_dir)+2} = 'AVG';
-Header{length(data_dir)+3} = 'Subjects';
+Header{length(data_dir)+3} = 'STDEV';
+Header{length(data_dir)+4} = 'Subjects';
 
 % Concatenate the results and header matrices
-results_combine1 = [results_locs_all, results_all, results_sum./results_tot, results_tot];
+results_combine1 = [results_locs_all, results_all, results_sum./results_tot, results_stdev, results_tot];
 results_combine2 = [Header;num2cell(results_combine1)];
 
 % Write the total data results to a csv
@@ -140,6 +150,8 @@ end
 writecell(common_res, fullfile(data_dir_path, strcat('NIRAF_Data_Compilation_COMMON_Data_', string(datetime('now','TimeZone','local','Format','yyyyMMdd')) ,'.csv')));
 
 
+% Finding and compiling the bins that are between -4 to 4 (Request from
+% Zach)
 count = 1;
 for x = 1:length(data_dir)
     spl = split(data_dir(x).name, '_');
