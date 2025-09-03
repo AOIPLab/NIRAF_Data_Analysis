@@ -16,9 +16,10 @@
 % 
 % Inputs: Script prompts user to select LUT file, then prompts to select
 % folder containing data files, then prompts for spacing and window sizes.
-% User is then asked to select the fovea for each image.
-% When the image is shown, moments later an image contrast gui also appears
-% and can be utilized.
+% The user can select if they'd like automatic or manual contrast adjustment. 
+% If manual is chosen, when the image is shown, moments later an image 
+% contrast gui appears to be utilized. User is then asked to select the 
+% fovea for each image.
 % 
 % The script uses the foveal coordinates to create a 5px wide region across
 % the image horizontally through the fovea. It then averages the 5 pixels 
@@ -37,7 +38,7 @@
 % it will give a warning and another chance to set the sampling and window
 % size.
 
-% Note: If you interact with the contrast gui and then click the seed point
+% Note: If you interact with the manual contrast gui and then click the seed point
 % too quickly after the interaction, warning messages may appear in the
 % command window, these do not interfere with the function of the script
 % and can be ignored.
@@ -103,6 +104,11 @@ while spacing < (window)
   end
 end
 
+% user selects automatic or manual contrast adjustment mode
+list = {'Automatic','Manual'};
+% index = 1 is automatic, index = 2 is manual
+[indx,tf] = listdlg('PromptString', 'Select Contrast Adjustment Mode:', 'ListString',list,'SelectionMode','single');
+
 fovea_coords = [];
 tracker = 1;
 
@@ -142,21 +148,22 @@ for i = (1:length(data_dir))
     % already grayscale: [AS Edit on 2/22/25]
     image = im2gray(imread(fullfile(data_dir_path,fname_list{i})));
 
+    if indx == 1
     % show the image with adjusted contrast
-    num_dev = 3;
-    data_mean = mean(image(:));
-    data_std = std2(image(:));
-    data_max = max(image(:));
-    data_min = min(image(:));
-    cmax = min(data_max, data_mean + num_dev * data_std);
-    cmin = max(data_min, data_mean - num_dev * data_std);
-    imshow(image, [cmin, cmax])
+        num_dev = 3;
+        data_mean = mean(image(:));
+        data_std = std2(image(:));
+        data_max = max(image(:));
+        data_min = min(image(:));
+        cmax = min(data_max, data_mean + num_dev * data_std);
+        cmin = max(data_min, data_mean - num_dev * data_std);
+        imshow(image, [cmin, cmax])
+    else
+        imshow(image);
+        imcontrast;
 
-
-    % title(fname_list{i}, 'Interpreter', 'none'); % commented out to mask image identity from user
-    % set(gcf, 'units','normalized','outerposition',[0 0 1 1]); % make the image full screen
-
-    % imcontrast;
+    end
+    
     % draw seed point
     seed = drawpoint;
     % extract coordinates from the seed
@@ -170,10 +177,8 @@ for i = (1:length(data_dir))
     tracker = tracker+1;
    
 
-
     % get the 5 px tall rectangle centered on the fovea value and average
     % the columns to get profile values
-
     maxY = fovea_y + 2;
     minY = fovea_y - 2;
 
