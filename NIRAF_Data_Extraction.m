@@ -30,8 +30,8 @@
 % 
 % Outputs: A csv file for each subject (containing bin center from fovea in
 % mm (T(-) N(+)), average pixel intensity, and items in bin (# of pixel 
-% locations contributing to the average)) will be generated in the location
-% of the LUT file, another csv containing the fovea x and y coordinates for 
+% locations contributing to the average)) will be generated in a 'Results'
+% folder in the data folder, another csv containing the fovea x and y coordinates for 
 % all subjects is generated in the same location.
 % 
 % Note: If the window size will overlap with the selections made
@@ -47,6 +47,7 @@
 clear all
 close all
 clc
+
 
 % constants
 ideal_AL = 24;
@@ -76,6 +77,10 @@ temp = data_dir;
 data_dir = temp(~ismember({temp.name}, {'.', '..'}));
 fname_list = {data_dir.name}';
 fname_list = fname_list(randperm(numel(fname_list)));
+
+% Create output 'Results' folder
+mkdir(fullfile(data_dir_path,'Results'));
+output_folder = fullfile(data_dir_path,'Results');
 
 % set up messages to be displayed to user to set spacing and window in the desired lateral unit
 m1 = 'Please enter desired SPACING (mm)';
@@ -251,13 +256,13 @@ for i = (1:length(data_dir))
     
     
     % write output file
-    writetable(T, fullfile(LUTpath,output_fname));
+    writetable(T, fullfile(output_folder,output_fname));
     
 end
 
 name_list = name_list';
 results = [name_list, fovea_coords];
-writecell(results, fullfile(LUTpath, strcat('NIRAF_Data_Extraction_Fovea_Coords_', string(datetime('now','TimeZone','local','Format','yyyyMMdd')) ,'.csv')));
+writecell(results, fullfile(output_folder, strcat('NIRAF_Data_Extraction_Fovea_Coords_', string(datetime('now','TimeZone','local','Format','yyyyMMdd')) ,'.csv')));
 close all
 
 
