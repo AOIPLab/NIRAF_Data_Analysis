@@ -9,8 +9,7 @@
 % including the summary results that are also created by the previous
 % script. Do not have any other files in the folder before running.
 % 
-% Outputs: saves to the input folder - NOTE: if rerunning please remove
-% these files before hand.
+% Outputs: saves to Summary Files folder within input folder
 % 
 % NIRAF_Data_Compilation_ALL_Data_date:
 % Has a summary of all the data - each location, if the subjects' data
@@ -18,11 +17,21 @@
 % location, and the number of subjects' data that is included in the
 % average.
 % 
+% NIRAF_Data_Compilation_[-4.0,4.0]_Data_date:
+% Lists all locations between -4 to 4 across all subjects. Each location is
+% listed for each subject, and the average value for that subject and
+% location is also listed. This was added at Z. Hahn's request
+
+% NIRAF_Data_Compilation_ALL_LISTED_Data_date:
+% Lists all locations across all subjects. Each location is
+% listed for each subject, and the average value for that subject and
+% location is also listed. This is mainly created for statistical purposes
+% and was added at J. Carroll's request 11/4/2025
+% 
 % NIRAF_Data_Compilation_COMMON_Data_date:
 % Lists all common locations across all subjects. Each common location is
 % listed for each subject, and the average value for that subject and
 % location is also listed. This is mainly created for statistical purposes.
-
 
 
 clear all
@@ -37,9 +46,13 @@ data_dir_path = uigetdir('.','Select directory containing analysis data');
 data_dir = dir(data_dir_path);
 temp = data_dir;
 
+
+data_dir_out = strcat(data_dir_path, "\Summary Files");
+mkdir(data_dir_out);
+
 % Fix the DOS era issue with the dir function (loads in the parent
 % directories '.' and '..')
-data_dir = temp(~ismember({temp.name}, {'.', '..'}));
+data_dir = temp(~ismember({temp.name}, {'.', '..', 'Summary Files'}));
 fname_list = {data_dir.name}';
 
 % Initialize data cell
@@ -51,7 +64,7 @@ max_loc = -10;
 common_min_loc = -100;
 common_max_loc = 100;
 
-% subject_ids = zeros(1, length(data_dir));
+subject_ids = zeros(1, length(data_dir));
 Header{1} = ' ';
 
 % Find the min and max locations of the bin centers across all subjects
@@ -116,8 +129,7 @@ for z = 1:length(results_locs_all)
 end
 
 
-
-% Add additional titles to the headers
+Add additional titles to the headers
 Header{length(data_dir)+2} = 'AVG';
 Header{length(data_dir)+3} = 'STDEV';
 Header{length(data_dir)+4} = 'Subjects';
@@ -127,7 +139,7 @@ results_combine1 = [results_locs_all, results_all, results_sum./results_tot, res
 results_combine2 = [Header;num2cell(results_combine1)];
 
 % Write the total data results to a csv
-writecell(results_combine2, fullfile(data_dir_path, strcat('NIRAF_Data_Compilation_ALL_Data_', string(datetime('now','TimeZone','local','Format','yyyyMMdd')) ,'.csv')));
+writecell(results_combine2, fullfile(data_dir_out, strcat('NIRAF_Data_Compilation_ALL_Data_', string(datetime('now','TimeZone','local','Format','yyyyMMdd')) ,'.csv')));
 
 
 % Finding and compiling the bins that all subjects have in common
@@ -147,7 +159,7 @@ for x = 1:length(data_dir)
 end
 
 % Write the common data results to a csv
-writecell(common_res, fullfile(data_dir_path, strcat('NIRAF_Data_Compilation_COMMON_Data_', string(datetime('now','TimeZone','local','Format','yyyyMMdd')) ,'.csv')));
+writecell(common_res, fullfile(data_dir_out, strcat('NIRAF_Data_Compilation_COMMON_Data_', string(datetime('now','TimeZone','local','Format','yyyyMMdd')) ,'.csv')));
 
 
 % Finding and compiling the bins that are between -4 to 4 (Request from
@@ -158,17 +170,37 @@ for x = 1:length(data_dir)
     sub_id = strcat(spl{1},'_',spl{2});
     for y = 1:length(data{x}.BinCenter)
         if data{x}.BinCenter(y) >= -4.0 && data{x}.BinCenter(y) <= 4.0
-            common_res{count,1} = data{x}.BinCenter(y);
-            common_res{count,2} = data_dir(x).name;
-            common_res{count,3} = sub_id;
-            common_res{count,4} = data{x}.Average(y);
+            common_4_res{count,1} = data{x}.BinCenter(y);
+            common_4_res{count,2} = data_dir(x).name;
+            common_4_res{count,3} = sub_id;
+            common_4_res{count,4} = data{x}.Average(y);
+            count = count+1;
+        end
+    end
+end
+
+% Write the common data results to a csv
+writecell(common_4_res, fullfile(data_dir_out, strcat('NIRAF_Data_Compilation_[-4.0,4.0]_Data_', string(datetime('now','TimeZone','local','Format','yyyyMMdd')) ,'.csv')));
+
+% Finding and compiling the bins that are between overall min to max (Request from
+% Joe)
+count = 1;
+for x = 1:length(data_dir)
+    spl = split(data_dir(x).name, '_');
+    sub_id = strcat(spl{1},'_',spl{2});
+    for y = 1:length(data{x}.BinCenter)
+        if data{x}.BinCenter(y) >= min_loc && data{x}.BinCenter(y) <= max_loc
+            all_res{count,1} = data{x}.BinCenter(y);
+            all_res{count,2} = data_dir(x).name;
+            all_res{count,3} = sub_id;
+            all_res{count,4} = data{x}.Average(y);
             count = count+1;
         end
     end
 end
     
 % Write the common data results to a csv
-writecell(common_res, fullfile(data_dir_path, strcat('NIRAF_Data_Compilation_[-4.0,4.0]_Data_', string(datetime('now','TimeZone','local','Format','yyyyMMdd')) ,'.csv')));
+writecell(all_res, fullfile(data_dir_out, strcat('NIRAF_Data_Compilation_ALL_LISTED_Data_', string(datetime('now','TimeZone','local','Format','yyyyMMdd')) ,'.csv')));
 
     
 
