@@ -16,6 +16,10 @@
 % contributed to the location (1 - yes, 0 - no), average intensity at that
 % location, and the number of subjects' data that is included in the
 % average.
+
+% NIRAF_Data_Compilation_ALL_Data_Values_date:
+% Lists all subject data by each location. If the subject did not have data
+% for the location, it is listed as 0 (on the edges)
 % 
 % NIRAF_Data_Compilation_[-4.0,4.0]_Data_date:
 % Lists all locations between -4 to 4 across all subjects. Each location is
@@ -115,6 +119,7 @@ for z = 1:length(results_locs_all)
         for k = 1:length(data{j}.BinCenter)
             if data{j}.BinCenter(k) == results_locs_all(z,1)
                 results_all(z,j) = 1;
+                results_values(z,j) = data{j}.Average(k);
                 results_list(count) = data{j}.Average(k);
                 results_sum(z) = results_sum(z) + data{j}.Average(k);
                 results_stdev(z) = std(results_list);
@@ -128,8 +133,14 @@ for z = 1:length(results_locs_all)
     end
 end
 
+% Concatenate the results containing the values
+results_values_combine = [results_locs_all, results_values];
+results_values_combine2 = [Header; num2cell(results_values_combine)];
 
-Add additional titles to the headers
+% Write the total data results values  to a csv
+writecell(results_values_combine2, fullfile(data_dir_out, strcat('NIRAF_Data_Compilation_ALL_Data_Values_', string(datetime('now','TimeZone','local','Format','yyyyMMdd')) ,'.csv')));
+
+% Add additional titles to the headers
 Header{length(data_dir)+2} = 'AVG';
 Header{length(data_dir)+3} = 'STDEV';
 Header{length(data_dir)+4} = 'Subjects';
@@ -140,7 +151,6 @@ results_combine2 = [Header;num2cell(results_combine1)];
 
 % Write the total data results to a csv
 writecell(results_combine2, fullfile(data_dir_out, strcat('NIRAF_Data_Compilation_ALL_Data_', string(datetime('now','TimeZone','local','Format','yyyyMMdd')) ,'.csv')));
-
 
 % Finding and compiling the bins that all subjects have in common
 count = 1;
